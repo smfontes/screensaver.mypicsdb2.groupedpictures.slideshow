@@ -1,0 +1,204 @@
+# Kodi Media Center language file
+# Addon Name: Grouped Pictures Slideshow
+# Addon id: screensaver.mypicsdb2.groupedpictures.slideshow
+# Addon Provider: sfontes
+
+msgctxt "Addon Summary"
+msgid "Screensaver that displays a slideshow of pictures grouped by the date the pictures were taken"
+msgstr "Screensaver that displays a slideshow of pictures grouped by the date the pictures were taken"
+
+msgctxt "Addon Description"
+msgid "The screensaver uses the database created by the [I]My Pictures Database[/I] addon to show groups of pictures that were all taken on the same date. A date is chosen at random, then pictures from the chosen date are displayed, ordered by time taken. After some number of pictures are displayed, the next random date is chosen. This allows you to see random selections from your picture collection, but within the context of other pictures from the same event. Filters created in the [I]My Pictures Database[/I] addon can be used to select the first picture in each group of pictures."
+msgstr "The screensaver uses the database created by the [I]My Pictures Database[/I] addon to show groups of pictures that were all taken on the same date. A date is chosen at random, then pictures from the chosen date are displayed, ordered by time taken. After some number of pictures are displayed, the next random date is chosen. This allows you to see random selections from your picture collection, but within the context of other pictures from the same event. Filters created in the [I]My Pictures Database[/I] addon can be used to select the first picture in each group of pictures."
+
+msgctxt "#30000"
+msgid "Basic"
+msgstr "Basic"
+
+msgctxt "#30001"
+msgid "Amount of seconds to display each image"
+msgstr "Amount of seconds to display each image"
+
+msgctxt "#30002"
+msgid "Maximum number of pictures to display in each group"
+msgstr "Maximum number of pictures to display in each group"
+
+msgctxt "#30003"
+msgid "Dim level"
+msgstr "Dim level"
+
+msgctxt "#30004"
+msgid "Effect"
+msgstr "Effect"
+
+msgctxt "#30005"
+msgid "Crossfade"
+msgstr "Crossfade"
+
+msgctxt "#30006"
+msgid "Pan and zoom"
+msgstr "Pan and zoom"
+
+msgctxt "#30007"
+msgid "Slide"
+msgstr "Slide"
+
+msgctxt "#30008"
+msgid "Additional"
+msgstr "Additional"
+
+msgctxt "#30009"
+msgid "Display background picture"
+msgstr "Display background picture"
+
+msgctxt "#30010"
+msgid "Scale images fullscreen"
+msgstr "Scale images fullscreen"
+
+msgctxt "#30011"
+msgid "Display image name"
+msgstr "Display image name"
+
+msgctxt "#30012"
+msgid "Disabled"
+msgstr "Disabled"
+
+msgctxt "#30013"
+msgid "Use filename"
+msgstr "Use filename"
+
+msgctxt "#30014"
+msgid "Use foldername"
+msgstr "Use foldername"
+
+msgctxt "#30015"
+msgid "Use folder and filename"
+msgstr "Use folder and filename"
+
+msgctxt "#30016"
+msgid "Use full path"
+msgstr "Use full path"
+
+msgctxt "#30017"
+msgid "Display picture date"
+msgstr "Display picture date"
+
+msgctxt "#30018"
+msgid "Display additional picture tags"
+msgstr "Display additional picture tags"
+
+msgctxt "#30019"
+msgid "Display music info during audio playback"
+msgstr "Display music info during audio playback"
+
+msgctxt "#30020"
+msgid "Display Clock"
+msgstr "Display Clock"
+
+msgctxt "#30021"
+msgid "Use My Pictures Database Filter for first picture in group"
+msgstr "Use My Pictures Database Filter for first picture in group"
+
+msgctxt "#30022"
+msgid "Filter Name"
+msgstr "Filter Name"
+
+msgctxt "#30023"
+msgid "Update Filter Names"
+msgstr "Update Filter Names"
+
+msgctxt "#30024"
+msgid "Display burst mode images more quickly"
+msgstr "Display burst mode images more quickly"
+
+msgctxt "#30025"
+msgid "Burst mode milliseconds per image"
+msgstr "Burst mode milliseconds per image"
+
+msgctxt "#30026"
+msgid "Slideshow settings error"
+msgstr "Slideshow settings error"
+
+msgctxt "#30027"
+msgid "Filter name was not specified"
+msgstr "Filter name was not specified"
+
+msgctxt "#30028"
+msgid "Filtername '%s' not found in [I]My Pictures Database[/I]"
+msgstr "Filtername '%s' not found in [I]My Pictures Database[/I]"
+
+msgctxt "#30029"
+msgid "No files match filter '%s'in [I]My Pictures Database[/I]"
+msgstr "No files match filter '%s'in [I]My Pictures Database[/I]"
+
+msgctxt "#30030"
+msgid "Filter Names Updated"
+msgstr "Filter Names Updated"
+
+msgctxt "#30031"
+msgid "Exit 'Settings' and return to see new Filter Names"
+msgstr "Exit 'Settings' and return to see new Filter Names"
+
+msgctxt "#30101"
+msgid "Specifies how long each image will be shown."
+msgstr "Specifies how long each image will be shown"
+
+msgctxt "#30102"
+msgid "Specifies the maximum number of pictures to show for each date."
+msgstr "Specifies the maximum number of pictures to show for each date."
+
+msgctxt "#30103"
+msgstr "Help for Dim level"
+msgid "Dims the pictures of the screensaver by some percentage."
+
+msgctxt "#30104"
+msgstr "Help for Effect"
+msgid "Choose the transition effect between slides."
+
+msgctxt "#30109"
+msgstr "Help for Display background picture"
+msgid "For those pictures that do not match the aspect ratio of the screen, display a dimmed, scaled-up version of the picture in the background. The background picture replaces the black bars that would be seen."
+
+msgctxt "#30110"
+msgstr "Help for Scale images fullscreen"
+msgid "If the aspect ratio of the picture is different than the aspect ratio of the screen, then scale the picture to exactly fit the screen. Could cause some distortion / stretching of the picture."
+
+msgctxt "#30111"
+msgstr "Help for Display image name"
+msgid "Display the file name of the picture."
+
+msgctxt "#30117"
+msgstr "Help for Display picture date"
+msgid "Display the ImageDateTime of the picture."
+
+msgctxt "#30118"
+msgstr "Help for Display additional picture tags"
+msgid "Display 'Headline', 'Caption/abstract', 'Sub-location', 'City', 'Province/state', and 'Country/primary location name' for those tags that exist in the image."
+
+msgctxt "#30119"
+msgstr "Help for Display music info during audio playback"
+msgid "Display information about currently playing music."
+
+msgctxt "#30120"
+msgstr "Help for Display Clock"
+msgid "Display the clock."
+
+msgctxt "#30121"
+msgstr "Help for Use My Pictures Database Filter for first picture in group"
+msgid "Select a Filter, and each group of pictures will start with a picture that matches the Filter. Other pictures in the group will be those that were taken on the same day as the first picture. All pictures in the group may not match the Filter."
+
+msgctxt "#30122"
+msgstr "Help for Filter Name"
+msgid "The name of the Filter to use for matching the first picture of a group."
+
+msgctxt "#30123"
+msgstr "Help for Update Filter Names"
+msgid "Select this if the list of Filters to choose from is not up-to-date. After updating the Filter Names, you must exit from [B]Settings[/B] and return in order to see the updated Filter names."
+
+msgctxt "#30124"
+msgstr "Help for Display burst mode images more quickly"
+msgid "If pictures are taken in 'burst mode' with a camera, there may be many very similar pictures occuring in the same second. This makes for a very boring slideshow if each slide is shown for a few seconds. Select this to speed up the sldeshow so that there is much less time between 'burst mode' images."
+
+msgctxt "#30125"
+msgstr "Help for Burst mode milliseconds per image"
+msgid "Depending on the speed of the processor running Kodi, you may have to adjust the time between burst mode images to achieve a smooth transition between images."
