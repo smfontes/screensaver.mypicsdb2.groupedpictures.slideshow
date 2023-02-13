@@ -81,6 +81,12 @@ def log(msg, level=xbmc.LOGINFO):
         lineno  = str(sys._getframe(1).f_lineno)
         xbmc.log(str("[%s] line %5d in %s >> %s"%(ADDON.getAddonInfo('name'), int(lineno), filename, msg.__str__())), level)
 
+# DateTimes are stored and retreived differently between mysql and sqlite.
+IMGDATE =     {"mysql" :"DATE_FORMAT(ImageDateTime,'%Y-%m-%d')", 
+               "sqlite":"SUBSTR(ImageDateTime, 0, 11)"}
+IMGDATETIME = {"mysql" :"DATE_FORMAT(ImageDateTime,'%Y-%m-%d %T')", 
+               "sqlite":"ImageDateTime"}
+
 # Formats that can be displayed in a slideshow
 PICTURE_FORMATS = ('bmp', 'jpeg', 'jpg', 'gif', 'png', 'tiff', 'mng', 'ico', 'pcx', 'tga')
 
@@ -112,6 +118,7 @@ class Screensaver(xbmcgui.WindowXMLDialog):
         pass
 
     def onInit(self):
+        self.db_backend = xbmcaddon.Addon('plugin.image.mypicsdb2').getSetting('db_backend').lower()
         # Load variables
         self._get_vars()
         # Get addon settings
@@ -137,22 +144,22 @@ class Screensaver(xbmcgui.WindowXMLDialog):
         # Set the skin name so we can have different looks for different skins
         self.winid.setProperty('SkinName',xbmc.getSkinDir())
         # Get MyPicsDB tagids for the information that can be displayed for each slide
-        _query = """ Select idTagType FROM TagTypes WHERE TagType IS 'Headline'; """
+        _query = " Select idTagType FROM TagTypes WHERE TagType = 'Headline'; "
         _ids = self._exec_query(_query)
         self.headline_tagid = _ids[0][0]
-        _query = """ Select idTagType FROM TagTypes WHERE TagType IS 'Caption/abstract'; """
+        _query = " Select idTagType FROM TagTypes WHERE TagType = 'Caption/abstract'; "
         _ids = self._exec_query(_query)
         self.caption_tagid = _ids[0][0]
-        _query = """ Select idTagType FROM TagTypes WHERE TagType IS 'Sub-location'; """
+        _query = " Select idTagType FROM TagTypes WHERE TagType = 'Sub-location'; "
         _ids = self._exec_query(_query)
         self.sublocation_tagid = _ids[0][0]
-        _query = """ Select idTagType FROM TagTypes WHERE TagType IS 'City'; """
+        _query = " Select idTagType FROM TagTypes WHERE TagType = 'City'; "
         _ids = self._exec_query(_query)
         self.city_tagid= _ids[0][0]
-        _query = """ Select idTagType FROM TagTypes WHERE TagType IS 'Province/state'; """
+        _query = " Select idTagType FROM TagTypes WHERE TagType = 'Province/state'; "
         _ids = self._exec_query(_query)
         self.state_tagid= _ids[0][0]
-        _query = """ Select idTagType FROM TagTypes WHERE TagType IS 'Country/primary location name'; """
+        _query = " Select idTagType FROM TagTypes WHERE TagType = 'Country/primary location name'; "
         _ids = self._exec_query(_query)
         self.country_tagid= _ids[0][0]
 
@@ -222,8 +229,8 @@ class Screensaver(xbmcgui.WindowXMLDialog):
         else:
             # Use filter selected, and filter name specified
             # Make sure the specified filter exists
-            query = """Select pkFilter FROM FilterWizard"""
-            query += """ WHERE strFilterName IS '%s'; """ %(self.slideshow_filtername.replace("'","''"))
+            query = "Select pkFilter FROM FilterWizard"
+            query += " WHERE strFilterName = '%s'; " %(self.slideshow_filtername.replace("'","''"))
             filter_ids = self._exec_query(query)
             if len(filter_ids) != 1:
                 # Filter name was not found in the My Pictures Database.
@@ -247,10 +254,11 @@ class Screensaver(xbmcgui.WindowXMLDialog):
                     self.completed_filtered_results = []
                     for (folder, file) in filtered_results:
                         query = \
-                            """ Select idFile, ImageDateTime FROM Files WHERE strPath IS '%s' AND strFilename IS '%s'; """ \
+                            " Select idFile, " + IMGDATETIME[self.db_backend]+ " FROM Files WHERE strPath = '%s' AND strFilename = '%s'; " \
                             %(folder.replace("'","''"), file.replace("'","''"))
                         file_info  = self._exec_query(query)
-                        self.completed_filtered_results.append(file_info[0])
+                        if len(file_info) > 0:
+                            self.completed_filtered_results.append(file_info[0])
                     # Randomize the sequence of pictures that match the filter
                     random.shuffle(self.completed_filtered_results)
                     # At the start of the show, use the first random image idFile
@@ -258,7 +266,7 @@ class Screensaver(xbmcgui.WindowXMLDialog):
 
     def _get_unique_dates(self):
         # Not using a filter, so get a list of all the unique dates of the images
-        query = """Select DISTINCT SUBSTR(ImageDateTime, 0, 11) FROM Files WHERE ImageDateTime IS NOT NULL AND ImageDateTime IS NOT '';"""
+        query = " Select DISTINCT " + IMGDATE[self.db_backend] + " FROM Files WHERE ImageDateTime IS NOT NULL AND ImageDateTime != ''; "
         self.distinct_dates = self._exec_query(query)
         # Randomize the order that the date groups will be shown
         random.shuffle(self.distinct_dates)
@@ -387,12 +395,12 @@ class Screensaver(xbmcgui.WindowXMLDialog):
                 random.shuffle(self.completed_filtered_results)
                 self.filtered_results_index = 0
             # Get the rest of the images that were taken on the chosen date
-            query = """SELECT idFile, ImageDateTime, strPath, strFilename"""
-            query += """ FROM Files """
-            query += """ WHERE SUBSTR(ImageDateTime, 0, 11) IS '%s' """ %(chosen_date)
-            query += """ ORDER BY ImageDateTime, strFilename """ 
+            query = " SELECT idFile, " + IMGDATETIME[self.db_backend] +", strPath, strFilename"
+            query += " FROM Files "
+            query += " WHERE " + IMGDATE[self.db_backend] + " = '%s' " %(chosen_date)
+            query += " ORDER BY ImageDateTime, strFilename "
             results = self._exec_query(query)
-            # Make sure only diplayable pictures are used
+            # Make sure only displayable pictures are used
             pictures_list = [result for result in results if result[3].lower().endswith(PICTURE_FORMATS)]
             # Find the offset in the list of pictures returned of the  picture that matched the query
             offset = 0;
@@ -416,10 +424,10 @@ class Screensaver(xbmcgui.WindowXMLDialog):
                 random.shuffle(self.distinct_dates)
                 self.results_index = 0
             # Get the rest of the images that were taken on the chosen date
-            query = """SELECT idFile, ImageDateTime, strPath, strFilename """
-            query += """ FROM Files"""
-            query += """ WHERE SUBSTR(ImageDateTime, 0, 11) IS '%s'""" %(chosen_date)
-            query += """ ORDER BY ImageDateTime, strFilename""" 
+            query = "SELECT idFile, " + IMGDATETIME[self.db_backend] + ", strPath, strFilename "
+            query += " FROM Files"
+            query += " WHERE " + IMGDATE[self.db_backend] + " = '%s'" %(chosen_date)
+            query += " ORDER BY ImageDateTime, strFilename"
             results = self._exec_query(query)
             # Make sure only diplayable pictures are used
             pictures_list = [result for result in results if result[3].lower().endswith(PICTURE_FORMATS)]
@@ -489,7 +497,7 @@ class Screensaver(xbmcgui.WindowXMLDialog):
         if self.slideshow_tags:
             image_id=picture[0]
             # Get all of the tags that are on this image
-            query = """ Select idTagContent FROM TagsInFiles WHERE idFile IS '%s'; """ %(image_id)
+            query = " Select idTagContent FROM TagsInFiles WHERE idFile = '%s'; " %(image_id)
             content_ids = self._exec_query(query)
             headline = ""
             caption = ""
@@ -499,7 +507,7 @@ class Screensaver(xbmcgui.WindowXMLDialog):
             country = ""
             for content_id in content_ids:
                 # Go through each of the tags, and store the ones of interest
-                query = """ Select idTagtype, TagContent FROM TagContents WHERE idTagContent IS '%s'; """ %(content_id[0])
+                query = " Select idTagtype, TagContent FROM TagContents WHERE idTagContent = '%s'; " %(content_id[0])
                 tags =  self._exec_query(query)
                 tag_id = tags[0][0]
                 tag_value = tags[0][1]
