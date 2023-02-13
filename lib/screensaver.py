@@ -109,6 +109,7 @@ DISABLED = 0
 FILENAME = 1
 FOLDERNAME = 2
 FOLDER_AND_FILENAME = 3
+FULL_PATH = 4
 
 # Get the Database from the My Pictures Database addon
 MPDB = MypicsDB.MyPictureDB()
@@ -211,12 +212,6 @@ class Screensaver(xbmcgui.WindowXMLDialog):
             if self.slideshow_bg:
                 self.image3 = self.getControl(5)
                 self.image4 = self.getControl(6)
-        # Get the controls for displaying picture information
-        self.headline_label = self.getControl(101)
-        self.caption_label = self.getControl(102)
-        self.location_label = self.getControl(103)
-        self.date_label = self.getControl(104)
-        self.name_label = self.getControl(105)
         
     def _get_filtered_pictures(self):
         # We are going to use a MyPicsDB filter, then get all of the possible pictures we could use to start a group
@@ -284,80 +279,81 @@ class Screensaver(xbmcgui.WindowXMLDialog):
             results = self._get_items()
             # First element of results is true if the pictures were taken in burst mode
             fastmode = results[0]
+            # Second element of results is all of the pictures
+            picture_group = results[1] # each element is [idFile, imgdatetime, strPath, strFilename]
             prev_effect = effect
             if fastmode:
                 # Display this group of pictures quickly
                 effect = FAST
-                timetowait = 1001
+                timetowait = 1000
                 self._set_prop('Fade1', '0')
                 self._set_prop('Fade2', '0')
                 self._set_prop('NoEffectFade1', '0')
                 self._set_prop('NoEffectFade2', '0')
                 self.image1.setAnimations(NO_EFFECT)
                 self.image2.setAnimations(NO_EFFECT)
-                self.image3.setVisible(False)
-                self.image4.setVisible(False)
-                # Wait only a short amount of time between slides
-                xbmc.sleep(self.slideshow_burst_time)
+                self.image1.setPosition(0,0)
+                self.image2.setPosition(0,0)
+                if self.slideshow_bg:
+                    self.image3.setVisible(False)
+                    self.image4.setVisible(False)
+                    
+                # Add picture information to slide for all images in burst mode
+                self._set_prop('FadeinLabel', '0')
+                self._set_prop('FadeoutLabel', '1')
+                xbmc.sleep(1000)
+                self._set_info_fields(picture_group[0])
+                self._set_prop('FadeinLabel', '1')
+                self._set_prop('FadeoutLabel', '0')
             else:
                 timetowait = self.slideshow_time * 1000
                 # Reset effect in case it was in burst mode
                 effect = self.slideshow_effect
-                self._set_prop('Fast1', '0')
-                self._set_prop('Fast2', '0')
                 if self.slideshow_bg:
                     self.image3.setVisible(True)
                     self.image4.setVisible(True)
-            # Second element of results is all of the pictures
-            picture_group = results[1]
             self._set_prop('Splash', 'hide')
-            first_picture = True
+
             # iterate through all the images
             for picture in picture_group:
-                
-                # Reset first image for burst mode if needed
-                if first_picture and effect == FAST and not prev_effect == FAST and self.slideshow_effect == PANZOOM:
-                    if current_image_control == self.image1:
-                        current_image_control = self.image2
-                        order = [2,1]
-                    else:
-                        current_image_control = self.image1
-                        order = [1,2]
-                    current_image_control.setPosition(0,0)
-                first_picture = False
-                
+                            
                 img_name = os.path.join(picture[2], picture[3])
                 current_image_control.setImage(img_name, False)
                 
-                # add background image to gui
-                if (not self.slideshow_scale) and self.slideshow_bg and not fastmode:
-                    if order[0] == 1:
-                        self.image3.setImage(img_name, False)
-                    else:
-                        self.image4.setImage(img_name, False)
-                # give xbmc some time to load the image
-                if fastmode:
-                    xbmc.sleep(self.slideshow_burst_time)
-                else:
-                    xbmc.sleep(1000)
+                if not fastmode:
+                    # add background image to gui
+                    if (not self.slideshow_scale) and self.slideshow_bg:
+                        if order[0] == 1:
+                            self.image3.setImage(img_name, False)
+                        else:
+                            self.image4.setImage(img_name, False)
 
-                # set animations
-                if effect == CROSSFADE or effect == PANZOOM:
-                    # add random slide/zoom anim
-                    if effect == PANZOOM:
+                    # Add picture information to slide
+                    self._set_prop('FadeinLabel', '0')
+                    self._set_prop('FadeoutLabel', '1')
+                    xbmc.sleep(1000)
+                    self._set_info_fields(picture)
+                    self._set_prop('FadeinLabel', '1')
+                    self._set_prop('FadeoutLabel', '0')
+
+                    # set animations
+                    if effect == CROSSFADE or effect == PANZOOM:
                         # add random slide/zoom anim
-                        self._anim(current_image_control)
-                    # add fade anim, used for both fade and slide/zoom anim
-                    self._set_prop('Fade%d' % order[0], '0')
-                    self._set_prop('Fade%d' % order[1], '1')
-                elif effect == NONE:
-                    # we need to hide the images when no effect is selected, add fade effect with time=0
-                    self._set_prop('NoEffectFade%d' % order[0], '0')
-                    self._set_prop('NoEffectFade%d' % order[1], '1')
-                # add fade anim to background images
-                if self.slideshow_bg and effect != NONE and not fastmode:
-                    self._set_prop('Fade1%d' % order[0], '0')
-                    self._set_prop('Fade1%d' % order[1], '1')
+                        if effect == PANZOOM:
+                            # add random slide/zoom anim
+                            self._anim(current_image_control)
+                        # add fade anim, used for both fade and slide/zoom anim
+                        self._set_prop('Fade%d' % order[0], '0')
+                        self._set_prop('Fade%d' % order[1], '1')
+                    elif effect == NONE:
+                        # we need to hide the images when no effect is selected, add fade effect with time=0
+                        self._set_prop('NoEffectFade%d' % order[0], '0')
+                        self._set_prop('NoEffectFade%d' % order[1], '1')
+                    # add fade anim to background images
+                    if self.slideshow_bg and effect != NONE:
+                        self._set_prop('Fade1%d' % order[0], '0')
+                        self._set_prop('Fade1%d' % order[1], '1')
+
                 # define next image
                 if current_image_control == self.image1:
                     current_image_control = self.image2
@@ -366,15 +362,15 @@ class Screensaver(xbmcgui.WindowXMLDialog):
                     current_image_control = self.image1
                     order = [1,2]
 
-                # Add picture information to slide
-                self._display_info_fields(picture)
-
                 # display the image for the specified amount of time
                 count = timetowait
                 while (not self.Monitor.abortRequested()) and (not self.stop) and count > 0:
                     count -= 1000
                     if not fastmode:
                         xbmc.sleep(1000)
+                    else:
+                        xbmc.sleep(self.slideshow_burst_time)
+
                 # break out of the for loop if onScreensaverDeactivated is called
                 if  self.stop or self.Monitor.abortRequested():
                     break
@@ -492,19 +488,25 @@ class Screensaver(xbmcgui.WindowXMLDialog):
             result = (False,pictures_list[offset:offset + self.slideshow_limit])
         return result
 
-    def _display_info_fields(self, picture):
+    def _set_info_fields(self, picture):
+        self._clear_prop('Headline')
+        self._clear_prop('Caption')
+        self._clear_prop('Sublocation')
+        self._clear_prop('City')
+        self._clear_prop('State')
+        self._clear_prop('Country')
+        self._clear_prop('Date')
+        self._clear_prop('Time')
+        self._clear_prop('FolderLocation')
+        self._clear_prop('Folder')
+        self._clear_prop('File')
+        self._clear_prop('FileExtension')
         # Get info to display in text fields
         if self.slideshow_tags:
             image_id=picture[0]
             # Get all of the tags that are on this image
             query = " Select idTagContent FROM TagsInFiles WHERE idFile = '%s'; " %(image_id)
             content_ids = self._exec_query(query)
-            headline = ""
-            caption = ""
-            sublocation = ""
-            city = ""
-            state = ""
-            country = ""
             for content_id in content_ids:
                 # Go through each of the tags, and store the ones of interest
                 query = " Select idTagtype, TagContent FROM TagContents WHERE idTagContent = '%s'; " %(content_id[0])
@@ -512,40 +514,35 @@ class Screensaver(xbmcgui.WindowXMLDialog):
                 tag_id = tags[0][0]
                 tag_value = tags[0][1]
                 if tag_id == self.headline_tagid:
-                    headline = tag_value
+                    self._set_prop('Headline',tag_value)
                 elif tag_id == self.caption_tagid:
-                    caption = tag_value
+                    self._set_prop('Caption',tag_value)
                 elif tag_id == self.sublocation_tagid:
-                    sublocation = tag_value
+                    self._set_prop('Sublocation',tag_value)
                 elif tag_id == self.city_tagid:
-                    city = tag_value
+                    self._set_prop('City',tag_value)
                 elif tag_id == self.state_tagid:
-                    state = tag_value
+                    self._set_prop('State',tag_value)
                 elif tag_id == self.country_tagid:
-                    country = tag_value
-            # Set the values for this image
-            self.headline_label.setLabel(headline)
-            self.caption_label.setLabel(caption)
-            self.location_label.setLabel(self.format_location(sublocation, city, state, country))
+                    self._set_prop('Country',tag_value)
         if self.slideshow_date:
             # Display the date the image was taken
             imgdatetime = picture[1]
-            time_object = time.strptime(imgdatetime, '%Y-%m-%d %H:%M:%S')
-            display_time=time.strftime('%A %B %e, %Y - %I:%M:%S %p', time_object)
-            self.date_label.setLabel(display_time)
+            self._set_prop('Date',time.strftime('%A %B %e, %Y',time.strptime(imgdatetime, '%Y-%m-%d %H:%M:%S')))
+            self._set_prop('Time',time.strftime('%I:%M:%S %p',time.strptime(imgdatetime, '%Y-%m-%d %H:%M:%S')))
         if self.slideshow_name != DISABLED:
-            # Display the name of the image
-            img_name = os.path.join(picture[2], picture[3])
-            display_name = img_name
             if self.slideshow_name == FILENAME:
-                display_name, extension = os.path.splitext(os.path.basename(img_name))
+                self._set_prop('File',os.path.splitext(picture[3])[0])
             elif self.slideshow_name == FOLDERNAME:
-                basename, display_name = os.path.split(os.path.dirname(img_name))
+                self._set_prop('Folder',os.path.basename(picture[2]))
             elif self.slideshow_name == FOLDER_AND_FILENAME:
-                filename, extension = os.path.splitext(os.path.basename(img_name))
-                basename, foldername = os.path.split(os.path.dirname(img_name))
-                display_name = os.path.join(foldername,filename)
-            self.name_label.setLabel(display_name)
+                self._set_prop('File',os.path.splitext(picture[3])[0])
+                self._set_prop('Folder',os.path.basename(picture[2])+'/')
+            elif self.slideshow_name == FULL_PATH:
+                self._set_prop('File',os.path.splitext(picture[3])[0])
+                self._set_prop('Folder',os.path.basename(picture[2])+'/')
+                self._set_prop('FolderLocation',os.path.dirname(picture[2])+'/')
+                self._set_prop('FileExtension',os.path.splitext(picture[3])[1])
 
     def _anim(self, current_image_control):
         # pick a random anim
@@ -572,34 +569,15 @@ class Screensaver(xbmcgui.WindowXMLDialog):
         else:
             current_image_control.setAnimations(eval(EFFECTLIST[number] % (zoom, zoom)))
 
-    def format_location(self, sublocation,city,state,country):
-        # Format the location with the correct commas
-        location = ""
-        if sublocation != "":
-            location = sublocation
-            if (city != "" or state != "" or country != ""):
-                location += ", "
-        if city != "":
-            location += city
-            if (state != "" or country != ""):
-                location += ", "
-        if state != "":
-            location += state
-            if (country != ""):
-                location += ", "
-        if country != "":
-            location += country
-        return location
-
     # Utility functions
     def _exec_query(self,query):
         return MPDB.cur.request(query)
 
     def _set_prop(self, name, value):
-        self.winid.setProperty('SlideView.%s' % name, value)
+        self.winid.setProperty('Screensaver.%s' % name, value)
 
     def _clear_prop(self, name):
-        self.winid.clearProperty('SlideView.%s' % name)
+        self.winid.clearProperty('Screensaver.%s' % name)
 
     def _exit(self):
         # exit when onScreensaverDeactivated gets called
@@ -614,6 +592,16 @@ class Screensaver(xbmcgui.WindowXMLDialog):
         self._clear_prop('Clock')
         self._clear_prop('Splash')
         self._clear_prop('Background')
+        self._clear_prop('Headline')
+        self._clear_prop('Caption')
+        self._clear_prop('Sublocation')
+        self._clear_prop('City')
+        self._clear_prop('State')
+        self._clear_prop('Country')
+        self._clear_prop('Date')
+        self._clear_prop('Time')
+        self._clear_prop('Folder')
+        self._clear_prop('File')
         MPDB.cur.close()
         self.close()
 
